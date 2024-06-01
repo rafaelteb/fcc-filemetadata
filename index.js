@@ -42,6 +42,16 @@ app.listen(port, () => {
 
 const conn = mongoose.connection;
 
+// Create a schema and model for the file
+const fileSchema = new mongoose.Schema({
+  name: String,
+  data: Buffer,
+  type: String,
+  size: Number,
+});
+
+const File = mongoose.model('File', fileSchema);
+
 // Initialize GridFS stream
 let gfs;
 conn.once('open', () => {
@@ -61,23 +71,35 @@ app.post('/api/fileanalyse', async (req, res) => {
       if (!req.files || Object.keys(req.files).length === 0) {
         return res.status(400).json({ error: 'No files were uploaded.' });
       }
-      const file = req.files.upfile;
-      const name = file.name;
-      const type = file.type;
-      const size = file.size;
+      const uploadfile = req.files.upfile;
+
+      const upfile = uploadfile.name;
+      const type = uploadfile.mimetype;
+      const size = uploadfile.size;
+
+      // Create a new file document
+      const file = new File({
+          name: upfile,
+          data: uploadfile.data,
+          mimetype: uploadfile.mimetype,
+          size: uploadfile.size,
+      });
 
       // Create the exercise
       const response = {
-        name: file.name,
-        type: file.mimetype,
-        size: file.size,
+        name: upfile,
+        type: uploadfile.mimetype,
+        size: uploadfile.size,
       };
       
+      await file.save();
+
       // Return the response
       res.status(201).json(response);
 
     } catch (error) {
-      
+      console.error(error);
+      res.status(500).json({ error: 'An error occurred while saving the file.' });
     }
 })
 
