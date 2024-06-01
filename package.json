@@ -12,6 +12,9 @@
     "cors": "^2.8.5",
     "mongoose": "^8.4.0"
   },
+		"engines": {
+		"node": "16.x"
+	},
   "repository": {
     "type": "git",
     "url": "https://github.com/freeCodeCamp/boilerplate-project-filemetadata"
